@@ -35,7 +35,25 @@
   font-weight: 400;
   color: #d3d3d3;
   line-height: 1.8;
+
   max-width: 800px;
   margin: 0 auto;
   padding: 0 1rem;
+}
+
+.getStartedBtn {
+  background: #d7c6ff;
+  transition: 0.3s ease-in-out;
+  color: black;
+  border-radius: 8px;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  padding-top: 0.5rem;
+  font-family: "Poppins", sans-serif;
+  padding-bottom: 0.5rem;
+  cursor: pointer;
+  margin-top: 20px;
+}
+.getstartedbtn:hover {
+  background: #322c42;
 }

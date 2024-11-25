@@ -15,6 +15,13 @@ const MiddlePart = (props: Props) => {
         analysis, room bookings, management, and logs. Elevate healthcare
         efficiency with cutting-edge technology.
       </p>
+      <center>
+        <input
+          type="button"
+          className="getStartedBtn"
+          value="Get started now ->"
+        />
+      </center>
     </div>
   );
 };
