@@ -1,16 +1,19 @@
 import React from "react";
-import './homepage.css';
+import "./homepage.css";
+import Navbar from "@/components/navbar/Navbar";
+import MiddlePart from "./middle/MiddlePart";
 
 const HomePage = () => {
-    return (
-        <>
-            <div className="homePage">
-                {/* man this takes a ton of time, at school rn :) */}
-                    <h3 className="text-3xl font-semibold text-white">This is a home page</h3>
-                </div>
-        </>
-    );
-
-}
+  return (
+    <>
+      <div className="homePage flex flex-col justify-start items-start">
+        <Navbar />
+        {/* man this takes a ton of time, at school rn :) */}
+        {/* now at home, this is so much faster and easier here dude :) */}
+        <MiddlePart />
+      </div>
+    </>
+  );
+};
 
 export default HomePage;
