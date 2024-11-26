@@ -11,11 +11,13 @@ const Navbar = () => {
     <div className="navbar flex items-center sticky z-50  top-0 justify-between px-4 py-3 shadow-md w-full  text-white">
       {/* Logo Section */}
       <div className="flex-shrink-0">
-        <Image
-          src={LOGO}
-          alt="logo"
-          className="w-[10rem] cursor-pointer md:w-[10rem] h-auto" // Scales logo size based on screen width
-        />
+        <Link href="/">
+          <Image
+            src={LOGO}
+            alt="logo"
+            className="w-[10rem] cursor-pointer md:w-[10rem] h-auto" // Scales logo size based on screen width
+          />
+        </Link>
       </div>
 
       {/* Navigation Links */}
