@@ -1,0 +1,205 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap");
+
+.aboutPage {
+  position: relative;
+  background-image: url("/bg.jpg"); /* Assuming bg.jpg is in the public folder */
+  background-size: cover;
+  background-attachment: fixed;
+  background-position: center;
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #d1d1d1;
+  font-family: "Poppins", sans-serif;
+}
+
+/* Overlay for better readability */
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6); /* Dark overlay */
+  z-index: 1;
+}
+
+/* Content Container */
+.aboutContent {
+  position: relative;
+  z-index: 2;
+  max-width: 900px;
+  margin: 2rem;
+  padding: 4rem 2rem;
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 1rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(6px);
+  text-align: center;
+}
+
+/* Title Section */
+.aboutHeader .title {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 0.5rem;
+  transition: color 0.3s ease;
+}
+
+.aboutHeader .title .highlight {
+  color: #ff4b4b;
+  text-shadow: 0 3px 15px rgba(255, 75, 75, 0.7);
+}
+
+.aboutHeader .tagline {
+  font-size: 1.2rem;
+  font-weight: 400;
+  color: #d1d1d1;
+}
+
+/* Description Section */
+.description p {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: #d1d1d1;
+  margin-bottom: 3rem;
+}
+
+/* Features List */
+.featuresList {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+
+.feature {
+  background: rgba(255, 75, 75, 0.1);
+  padding: 2rem;
+  cursor: pointer;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(255, 75, 75, 0.3);
+  backdrop-filter: blur(4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, all;
+}
+
+.feature h3 {
+  font-size: 1.5rem;
+  color: #ff4b4b;
+  margin-bottom: 0.5rem;
+}
+
+.feature p {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #d1d1d1;
+}
+
+.feature:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 12px 30px rgba(255, 75, 75, 0.5);
+}
+
+/* Call to Action Button */
+.cta .learnMoreBtn {
+  background: #ff4b4b;
+  color: white;
+  border-radius: 50px;
+  padding: 0.8rem 2rem;
+  font-size: 1rem;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 4px 15px rgba(255, 75, 75, 0.6);
+  transition: background 0.3s ease-in-out, transform 0.3s ease;
+}
+
+.cta .learnMoreBtn:hover {
+  background: #cc0000;
+  transform: translateY(-3px);
+}
+
+/* Animations using AOS */
+[data-aos] {
+  opacity: 0;
+  transition-property: opacity, transform;
+}
+
+[data-aos="fade-down"] {
+  transform: translateY(-20px);
+}
+
+[data-aos="fade-up"] {
+  transform: translateY(20px);
+}
+
+.aos-animate {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .aboutContent {
+    padding: 3rem 1.5rem;
+  }
+
+  .aboutHeader .title {
+    font-size: 2.5rem;
+  }
+
+  .description p {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .aboutHeader .title {
+    font-size: 2rem;
+  }
+
+  .featuresList {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .feature {
+    padding: 1.5rem;
+  }
+
+  .cta .learnMoreBtn {
+    padding: 0.7rem 1.5rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .aboutContent {
+    padding: 2rem 1rem;
+  }
+
+  .aboutHeader .title {
+    font-size: 1.8rem;
+  }
+
+  .description p {
+    font-size: 0.9rem;
+  }
+
+  .featuresList {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .feature {
+    padding: 1rem;
+  }
+
+  .cta .learnMoreBtn {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.8rem;
+  }
+}

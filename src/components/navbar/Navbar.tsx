@@ -20,12 +20,14 @@ const Navbar = () => {
 
       {/* Navigation Links */}
       <div className="hidden md:flex justify-center items-center flex-1 gap-6">
-        <h4
-          className="text-lg font-medium cursor-pointer px-3 py-2 rounded-md hover:bg-gray-700 transition-all"
-          style={{ fontFamily: "Poppins, sans-serif" }}
-        >
-          About
-        </h4>
+        <Link href="/about">
+          <h4
+            className="text-lg font-medium cursor-pointer px-3 py-2 rounded-md hover:bg-gray-700 transition-all"
+            style={{ fontFamily: "Poppins, sans-serif" }}
+          >
+            About
+          </h4>
+        </Link>
         <a href="https://github.com/0Armaan025" target="_blank">
           <h4
             className="text-lg font-medium cursor-pointer px-3 py-2 rounded-md hover:bg-gray-700 transition-all"
