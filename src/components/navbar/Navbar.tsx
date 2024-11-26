@@ -2,6 +2,7 @@ import React from "react";
 import Image from "next/image";
 import "./navbar.css";
 import LOGO from "../../../public/logo.png";
+import Link from "next/link";
 
 type Props = {};
 
@@ -13,7 +14,7 @@ const Navbar = () => {
         <Image
           src={LOGO}
           alt="logo"
-          className="w-[8rem] md:w-[10rem] h-auto" // Scales logo size based on screen width
+          className="w-[10rem] cursor-pointer md:w-[10rem] h-auto" // Scales logo size based on screen width
         />
       </div>
 
@@ -25,12 +26,14 @@ const Navbar = () => {
         >
           About
         </h4>
-        <h4
-          className="text-lg font-medium cursor-pointer px-3 py-2 rounded-md hover:bg-gray-700 transition-all"
-          style={{ fontFamily: "Poppins, sans-serif" }}
-        >
-          Code
-        </h4>
+        <a href="https://github.com/0Armaan025" target="_blank">
+          <h4
+            className="text-lg font-medium cursor-pointer px-3 py-2 rounded-md hover:bg-gray-700 transition-all"
+            style={{ fontFamily: "Poppins, sans-serif" }}
+          >
+            Code
+          </h4>
+        </a>
       </div>
 
       {/* Button Section */}

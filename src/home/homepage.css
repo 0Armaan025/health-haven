@@ -4,8 +4,10 @@
 
 .homePage {
   background-image: url("../../public/bg.jpg");
-  /* height: 100vh; */
-  height: 100vh;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   justify-content: start;
