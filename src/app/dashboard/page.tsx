@@ -12,13 +12,7 @@ type Room = {
   status: string; // e.g., "Available", "Occupied", etc.
 };
 
-type Props = {
-  hospitalName: string;
-  hospitalCode: string;
-  rooms: Room[];
-};
-
-const DashboardPage: React.FC<Props> = ({}) => {
+const DashboardPage: React.FC = ({}) => {
   const [hospitalCode, setHospitalCode] = useState("");
   const [hospitalName, setHospitalName] = useState("");
   const rooms = [
