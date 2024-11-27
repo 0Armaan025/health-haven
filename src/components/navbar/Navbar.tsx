@@ -30,7 +30,7 @@ const Navbar = () => {
             About
           </h4>
         </Link>
-        <a href="https://github.com/0Armaan025" target="_blank">
+        <a href="https://github.com/0Armaan025/health-haven" target="_blank">
           <h4
             className="text-lg font-medium cursor-pointer px-3 py-2 rounded-md hover:bg-gray-700 transition-all"
             style={{ fontFamily: "Poppins, sans-serif" }}
@@ -42,12 +42,14 @@ const Navbar = () => {
 
       {/* Button Section */}
       <div className="flex-shrink-0">
-        <button
-          className="text-lg font-semibold bg-red-600 px-4 py-2 rounded-full transition-all hover:bg-red-700"
-          style={{ fontFamily: "Poppins, sans-serif" }}
-        >
-          Dashboard
-        </button>
+        <Link href="/dashboard">
+          <button
+            className="text-lg font-semibold bg-red-600 px-4 py-2 rounded-full transition-all hover:bg-red-700"
+            style={{ fontFamily: "Poppins, sans-serif" }}
+          >
+            Dashboard
+          </button>
+        </Link>
       </div>
     </div>
   );
