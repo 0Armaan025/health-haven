@@ -70,7 +70,7 @@ const AboutPage = () => {
 
           {/* Call to Action */}
           <div className="cta" data-aos="fade-up" data-aos-delay="300">
-            <button className="learnMoreBtn">Get Started ➜</button>
+            <button className="learnMoreBtn">Get more help ➜</button>
           </div>
         </div>
       </section>
