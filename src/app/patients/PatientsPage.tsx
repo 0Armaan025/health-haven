@@ -4,7 +4,12 @@ import Navbar from "@/components/navbar/Navbar";
 import redirect from "next/navigation";
 import Footer from "@/components/footer/Footer";
 import PatientTile from "@/components/patient_tile/PatientTile";
-import { Patient } from "./page";
+
+type Patient = {
+  name: string;
+  timestamp: string;
+  room: string;
+};
 
 export const PatientsPage: React.FC = () => {
   const [patients, setPatients] = useState<Patient[]>([
@@ -29,7 +34,7 @@ export const PatientsPage: React.FC = () => {
         <h4
           className="text-xl font-semiobold text-green-300 mb-3 underline cursor-pointer"
           onClick={() => {
-            redirect("/add-patient");
+            window.location.href = "/add-patient";
           }}
           style={{ fontFamily: "Poppins, sans-serif" }}
         >
