@@ -48,6 +48,11 @@ const RoomPage = () => {
     setRooms(updatedRooms);
   };
 
+  const handleRemoveRoom = (id: string) => {
+    const updatedRooms = rooms.filter((room) => room.id !== id);
+    setRooms(updatedRooms);
+  };
+
   return (
     <>
       <Navbar />
@@ -124,6 +129,14 @@ const RoomPage = () => {
                 <option value="Available">Available</option>
                 <option value="Occupied">Occupied</option>
               </select>
+
+              {/* Remove Room Button */}
+              <button
+                onClick={() => handleRemoveRoom(room.id)}
+                className="absolute top-2 right-2 bg-red-600 text-white hover:text-gray-200 px-2 py-1 bg-opacity-50 rounded-md transition-all cursor-pointer hover:bg-red-800"
+              >
+                Remove
+              </button>
             </div>
           ))}
         </div>

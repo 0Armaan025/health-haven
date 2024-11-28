@@ -24,7 +24,7 @@ const LeftSideBar: React.FC<Props> = () => {
   ];
 
   return (
-    <div className="w-64 h-screen bg-gray-900 text-gray-100 flex flex-col shadow-lg">
+    <div className="w-64 h-screen bg-gray-900 text-gray-100 flex flex-col shadow-lg sm:w-56 md:w-64 lg:w-72 xl:w-80">
       {/* Sidebar Header */}
       <div className="text-center py-6 border-b border-gray-800">
         <h1 className="text-2xl font-bold text-red-600">Hospital Admin</h1>

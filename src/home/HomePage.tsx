@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import "./homepage.css";
 import Navbar from "@/components/navbar/Navbar";

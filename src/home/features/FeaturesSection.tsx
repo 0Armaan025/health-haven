@@ -1,14 +1,31 @@
-import React from "react";
+import React, { useEffect } from "react";
+import AOS from "aos";
+import "aos/dist/aos.css"; // Import AOS styles
 import "./features.css";
 
 const FeaturesSection = () => {
+  useEffect(() => {
+    // Initialize AOS animations
+    AOS.init({
+      duration: 1000, // Animation duration
+      once: true, // Animation happens only once
+    });
+  }, []);
+
   return (
     <div className="featuresSection">
-      <h2 className="featuresHeading text-gray-300 text-3xl md:text-4xl lg:text-5xl font-bold text-center">
+      <h2
+        className="featuresHeading text-gray-300 text-3xl md:text-4xl lg:text-5xl font-bold text-center"
+        data-aos="fade-up"
+      >
         Features That <span className="highlight text-red-500">Transform</span>{" "}
         Healthcare
       </h2>
-      <p className="featuresSubHeading text-gray-400 text-sm md:text-base lg:text-lg max-w-3xl mx-auto mt-4">
+      <p
+        className="featuresSubHeading text-gray-400 text-sm md:text-base lg:text-lg max-w-3xl mx-auto mt-4"
+        data-aos="fade-up"
+        data-aos-delay="200"
+      >
         Explore the cutting-edge capabilities of our AI-powered hospital room
         management system. From automated patient handling to real-time
         notifications, we've got you covered.
@@ -16,9 +33,7 @@ const FeaturesSection = () => {
 
       <div className="featuresCardsContainer flex flex-wrap justify-center gap-6 mt-10">
         {/* Feature 1 */}
-
-        {/* Feature 2 */}
-        <div className="featureCard">
+        <div className="featureCard" data-aos="fade-up" data-aos-delay="400">
           <div className="iconContainer">
             <img
               src="https://cdn-icons-png.flaticon.com/128/2014/2014825.png"
@@ -33,8 +48,8 @@ const FeaturesSection = () => {
           </p>
         </div>
 
-        {/* Feature 3 */}
-        <div className="featureCard">
+        {/* Feature 2 */}
+        <div className="featureCard" data-aos="fade-up" data-aos-delay="600">
           <div className="iconContainer">
             <img
               src="https://cdn-icons-png.flaticon.com/128/3974/3974807.png"
@@ -51,8 +66,8 @@ const FeaturesSection = () => {
           </p>
         </div>
 
-        {/* Feature 4 */}
-        <div className="featureCard">
+        {/* Feature 3 */}
+        <div className="featureCard" data-aos="fade-up" data-aos-delay="800">
           <div className="iconContainer">
             <img
               src="https://cdn-icons-png.flaticon.com/128/2318/2318736.png"
