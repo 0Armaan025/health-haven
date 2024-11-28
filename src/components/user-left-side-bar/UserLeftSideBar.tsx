@@ -1,25 +1,14 @@
 "use client";
 import React from "react";
-import {
-  FaHome,
-  FaBell,
-  FaUserInjured,
-  FaRobot,
-  FaSignOutAlt,
-  FaHospital,
-} from "react-icons/fa"; // Icons for better UI
-import { FaPerson } from "react-icons/fa6";
+import { FaHome, FaBell, FaUser, FaSignOutAlt, FaBook } from "react-icons/fa"; // Icons for better UI
 
 type Props = {};
 
-const LeftSideBar: React.FC<Props> = () => {
+const UserLeftSideBar: React.FC<Props> = () => {
   const menuItems = [
-    { name: "Dashboard", icon: <FaHome />, path: "/dashboard" },
-    { name: "Room management", icon: <FaHospital />, path: "/room-management" },
-    { name: "Notifications", icon: <FaBell />, path: "/notifications" },
-    { name: "Patients", icon: <FaUserInjured />, path: "/patients" },
-    { name: "Track (NEW AI FEATURE)", icon: <FaRobot />, path: "/track" },
-    { name: "Hospital Staff", icon: <FaPerson />, path: "/staff" },
+    { name: "Profile", icon: <FaUser />, path: "/user-dashboard" },
+    { name: "User Logs", icon: <FaBook />, path: "/view-logs" },
+
     { name: "Log out", icon: <FaSignOutAlt />, path: "/logout" },
   ];
 
@@ -27,8 +16,8 @@ const LeftSideBar: React.FC<Props> = () => {
     <div className="w-64 h-screen bg-gray-900 text-gray-100 flex flex-col shadow-lg">
       {/* Sidebar Header */}
       <div className="text-center py-6 border-b border-gray-800">
-        <h1 className="text-2xl font-bold text-red-600">Hospital Admin</h1>
-        <p className="text-sm text-gray-400">Efficiently manage resources</p>
+        <h1 className="text-2xl font-bold text-red-600">User Dashboard</h1>
+        <p className="text-sm text-gray-400">Manage your account</p>
       </div>
 
       {/* Menu Items */}
@@ -50,10 +39,10 @@ const LeftSideBar: React.FC<Props> = () => {
 
       {/* Footer */}
       <div className="py-4 border-t border-gray-800 text-center text-sm text-gray-400">
-        <p>&copy; 2024 Hospital Admin</p>
+        <p>&copy; 2024 User Dashboard</p>
       </div>
     </div>
   );
 };
 
-export default LeftSideBar;
+export default UserLeftSideBar;
