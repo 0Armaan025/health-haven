@@ -1,6 +1,6 @@
 import React from "react";
 import './patientspage.css';
-import Navbar from "@/components/navbar/Navbar.tsx";
+import Navbar from "@/components/navbar/Navbar";
 
 
 const PatientsPage = () => {
