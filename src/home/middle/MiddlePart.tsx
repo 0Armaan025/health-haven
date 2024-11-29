@@ -1,15 +1,34 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import AOS from "aos";
 import "aos/dist/aos.css"; // Import the AOS styles
 import "./middlepart.css";
+import { onAuthStateChanged } from "firebase/auth";
+
+import { auth, db } from "../../firebase/firebaseConfig";
 
 const MiddlePart = () => {
+  const [user, setUser] = useState<any>(null);
+
   useEffect(() => {
-    // Initialize AOS animations
+    // Listen for authentication state changes
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
+        console.log("User logged in:", currentUser);
+        alert(`User logged in: ${currentUser.email}`);
+      } else {
+        setUser(null);
+        console.log("No user logged in");
+        alert("No user logged in");
+      }
+    });
     AOS.init({
       duration: 1000, // Animation duration
       once: true, // Animation will only happen once
     });
+
+    // Cleanup the listener on component unmount
+    return () => unsubscribe();
   }, []);
 
   return (

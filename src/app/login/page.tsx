@@ -5,12 +5,15 @@ import Footer from "@/components/footer/Footer";
 import AOS from "aos";
 import "./login.css";
 import "aos/dist/aos.css";
+import { auth } from "../../firebase/firebaseConfig";
+import { signInWithEmailAndPassword } from "firebase/auth";
 
 const LoginPage: React.FC = () => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
+  const [loading, setLoading] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -20,21 +23,36 @@ const LoginPage: React.FC = () => {
     }));
   };
 
-  const handleLogin = () => {
-    // Validate email and password fields
-    if (formData.email.trim() === "") {
+  const handleLogin = async () => {
+    const { email, password } = formData;
+
+    if (email.trim() === "") {
       alert("Email is required!");
       return;
     }
 
-    if (formData.password.trim() === "") {
+    if (password.trim() === "") {
       alert("Password is required!");
       return;
     }
 
-    // Proceed with login logic (API call or further action)
-    alert("Logged in successfully!");
-    // Here, you would typically send the form data to an API to authenticate the user
+    setLoading(true); // Start loading
+    try {
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const user = userCredential.user;
+      console.log("User logged in:", user);
+      alert("Logged in successfully!");
+      // Redirect or perform further actions after successful login
+    } catch (error: any) {
+      console.error("Error logging in:", error);
+      alert(error.message || "Failed to log in.");
+    } finally {
+      setLoading(false); // End loading
+    }
   };
 
   useEffect(() => {
@@ -109,10 +127,11 @@ const LoginPage: React.FC = () => {
             <div className="flex justify-between mt-6">
               <button
                 type="button"
-                className="px-6 py-3 bg-red-500 text-white rounded-lg"
+                className="px-6 py-3 bg-red-500 text-white rounded-lg disabled:opacity-50"
                 onClick={handleLogin}
+                disabled={loading}
               >
-                Login
+                {loading ? "Logging in..." : "Login"}
               </button>
             </div>
           </form>
