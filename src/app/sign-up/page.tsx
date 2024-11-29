@@ -4,6 +4,9 @@ import "./signuppage.css";
 import React, { useState, useEffect } from "react";
 import Footer from "@/components/footer/Footer";
 import AOS from "aos";
+import { auth, db } from "../../firebase/firebaseConfig";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { doc, setDoc, collection } from "firebase/firestore";
 import "aos/dist/aos.css";
 import Link from "next/link";
 
@@ -74,7 +77,7 @@ const SignUpPage: React.FC = () => {
     }
   };
 
-  const handleUserTypeChange = (type: string) => {
+  const handleUserTypeChange = async (type: string) => {
     setUserType(type);
     if (type === "individual") {
       setFormData((prevData) => ({
@@ -83,31 +86,81 @@ const SignUpPage: React.FC = () => {
         hospitalCode: "",
         hospitalAddress: "",
       }));
-      console.log(formData);
-      window.location.href = "/dashboard";
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        formData.email,
+        formData.password
+      );
+      const user = userCredential.user;
+
+      
+
+      const userData = {
+        username: formData.username,
+        email: formData.email,
+        type: "individual", // 'individual' or 'hospital'
+      };
+
+      // Add user details to Firestore under "users" collection
+      await setDoc(doc(db, "users", user.uid), userData).then(() => {
+        window.location.href = "/dashboard";
+      });
     } else {
       setStep(4); // Go to hospital details step (step 4) for hospital staff
     }
   };
 
-  const handleSubmit = () => {
-    // Check if all required fields are filled
-    if (formData.username === "") {
-      alert("Username is required!");
-    } else if (formData.email === "") {
-      alert("Email is required!");
-    } else if (formData.password === "") {
-      alert("Password is required!");
-    } else if (userType === "hospital" && formData.hospitalName === "") {
-      alert("Hospital name is required!");
-    } else if (userType === "hospital" && formData.hospitalCode === "") {
-      alert("Hospital code is required!");
-    } else if (userType === "hospital" && formData.hospitalAddress === "") {
-      alert("Hospital address is required!");
-    } else {
-      // Form is valid, proceed to submit
-      alert("Form submitted successfully!");
-      // Here, you would typically send the form data to an API or handle further logic
+  const handleSubmit = async () => {
+    if (!formData.email || !formData.password || !formData.username) {
+      alert("Please fill all required fields!");
+      return;
+    }
+
+    if (
+      userType === "hospital" &&
+      (!formData.hospitalName ||
+        !formData.hospitalCode ||
+        !formData.hospitalAddress)
+    ) {
+      alert("Please provide all hospital details!");
+      return;
+    }
+
+    try {
+      // Create the user in Firebase Authentication
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        formData.email,
+        formData.password
+      );
+      const user = userCredential.user;
+
+      // Prepare Firestore user data
+      const userData = {
+        username: formData.username,
+        email: formData.email,
+        type: userType, // 'individual' or 'hospital'
+      };
+
+      // Add user details to Firestore under "users" collection
+      await setDoc(doc(db, "users", user.uid), userData);
+
+      if (userType === "hospital") {
+        // Add hospital details to a new document in the "hospitals" collection
+        const hospitalData = {
+          name: formData.hospitalName,
+          code: formData.hospitalCode,
+          address: formData.hospitalAddress,
+          members: [formData.email], // Initialize with the current hospital staff's email
+        };
+
+        await setDoc(doc(db, "hospitals", formData.hospitalCode), hospitalData);
+      }
+
+      alert("Account created successfully!");
+    } catch (error: any) {
+      console.error("Error during signup:", error);
+      alert(error.message || "Failed to create account. Please try again.");
     }
   };
 
