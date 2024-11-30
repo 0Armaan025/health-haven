@@ -96,6 +96,7 @@ const RoomPage = () => {
   }, []);
 
   const handleAddRoom = async () => {
+    console.log("Adding room...");
     if (newRoom.name.trim() === "") return alert("Room name is required!");
 
     const db = getFirestore();
@@ -103,35 +104,55 @@ const RoomPage = () => {
 
     if (user && isAuthorized) {
       try {
-        const userDoc = await getDoc(doc(db, "users", user.uid));
-        const hospitalCode = userDoc.data()?.hospitalCode;
+        // Get all hospital documents
+        const hospitalsRef = collection(db, "hospitals");
+        const hospitalDocs = await getDocs(hospitalsRef);
 
-        if (hospitalCode) {
-          const hospitalDocRef = doc(db, "hospitals", hospitalCode);
-          const roomsRef = collection(hospitalDocRef, "rooms");
+        let hospitalCode = null;
 
-          // Add new room to Firestore
-          const newRoomDoc = await addDoc(roomsRef, {
-            room_name: newRoom.name,
-            type: newRoom.type,
-            status: newRoom.status,
-          });
+        // Loop through all hospital docs to find the user's email in the members array
+        for (const hospitalDoc of hospitalDocs.docs) {
+          const hospitalData = hospitalDoc.data();
+          const members = hospitalData.members || [];
 
-          // Update local state
-          setRooms([
-            ...rooms,
-            {
-              id: newRoomDoc.id,
-              name: newRoom.name,
-              type: newRoom.type as RoomType,
-              status: newRoom.status as Status,
-            },
-          ]);
-
-          setNewRoom({ name: "", type: "Stretcher", status: "Available" });
+          if (members.includes(user.email)) {
+            hospitalCode = hospitalData.code; // Get the hospital code
+            break; // Exit loop once a match is found
+          }
         }
+
+        if (!hospitalCode) {
+          return alert("You are not associated with any hospital.");
+        }
+
+        console.log("Hospital code found:", hospitalCode);
+
+        // Reference to the hospital's rooms collection
+        const hospitalDocRef = doc(db, "hospitals", hospitalCode);
+        const roomsRef = collection(hospitalDocRef, "rooms");
+
+        // Add the new room to Firestore
+        const newRoomDoc = await addDoc(roomsRef, {
+          room_name: newRoom.name,
+          type: newRoom.type,
+          status: newRoom.status,
+        });
+
+        // Update the local state
+        setRooms([
+          ...rooms,
+          {
+            id: newRoomDoc.id,
+            name: newRoom.name,
+            type: newRoom.type as RoomType,
+            status: newRoom.status as Status,
+          },
+        ]);
+
+        setNewRoom({ name: "", type: "Stretcher", status: "Available" });
       } catch (error) {
         console.error("Error adding room:", error);
+        alert("Failed to add room. Please try again.");
       }
     } else {
       alert("You are not authorized to add rooms.");
