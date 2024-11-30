@@ -1,14 +1,12 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { auth } from "../../firebase/firebaseConfig";
+import { auth, db } from "../../firebase/firebaseConfig";
 import {
   getFirestore,
   collection,
   query,
   where,
   getDocs,
-  doc,
-  getDoc,
 } from "firebase/firestore";
 import Navbar from "@/components/navbar/Navbar";
 import Footer from "@/components/footer/Footer";
@@ -17,14 +15,12 @@ const AddPatientsPage: React.FC = () => {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [roomName, setRoomName] = useState("");
+  const [superRooms, setSuperRooms] = useState<string[]>([]);
   const [remarks, setRemarks] = useState("");
   const [rooms, setRooms] = useState<string[]>([]); // To store available rooms
   const [userType, setUserType] = useState<string | null>(null); // To store user type (hospital or other)
 
   useEffect(() => {
-    const db = getFirestore();
-
-    // Listen for authentication state changes
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {
         const userEmail = user.email;
@@ -58,10 +54,15 @@ const AddPatientsPage: React.FC = () => {
               const availableRooms: string[] = [];
               roomsSnapshot.forEach((roomDoc) => {
                 const roomData = roomDoc.data();
-                console.log("some room data is " + roomDoc.data());
-                availableRooms.push(roomData.room_name);
+                console.log("Room data:", roomData); // Log room data to see what is fetched
+
+                if (roomData?.room_name) {
+                  availableRooms.push(roomData.room_name);
+                  setSuperRooms([...superRooms, roomData.room_name]); // Fix: Use spread operator to add new room name to superRooms array
+                }
               });
 
+              console.log("Available rooms:", availableRooms); // Log available rooms after fetching
               setRooms(availableRooms); // Set the available rooms
               setUserType("hospital");
             }
@@ -135,6 +136,7 @@ const AddPatientsPage: React.FC = () => {
               <input
                 type="email"
                 id="email"
+                value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 className="w-full p-3 rounded-md bg-gray-800 text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500"
@@ -158,11 +160,15 @@ const AddPatientsPage: React.FC = () => {
                 <option value="" disabled>
                   Select a room
                 </option>
-                {rooms.map((room) => (
-                  <option key={room} value={room}>
-                    {room}
-                  </option>
-                ))}
+                {superRooms.length === 0 ? (
+                  <option disabled>No rooms available</option> // Show message if no rooms are available
+                ) : (
+                  superRooms.map((room, index) => (
+                    <option key={index} value={room}>
+                      {room}
+                    </option>
+                  ))
+                )}
               </select>
             </div>
 
