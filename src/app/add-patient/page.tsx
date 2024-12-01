@@ -7,6 +7,7 @@ import {
   query,
   where,
   getDocs,
+  addDoc,
 } from "firebase/firestore";
 import Navbar from "@/components/navbar/Navbar";
 import Footer from "@/components/footer/Footer";
@@ -22,79 +23,131 @@ const AddPatientsPage: React.FC = () => {
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
-      if (user) {
-        const userEmail = user.email;
-        setEmail(userEmail || "");
+      if (!user) {
+        setUserType(null);
+        return;
+      }
 
+      const userEmail = user.email;
+      setEmail(userEmail || "");
+
+      try {
+        // Reference the "hospitals" collection
         const hospitalsRef = collection(db, "hospitals");
 
-        // Query the "hospitals" collection to find the hospital where the user's email exists in the "members" field
+        // Query for the hospital document where "members" array contains the user's email
         const hospitalsQuery = query(
           hospitalsRef,
           where("members", "array-contains", userEmail)
         );
         const querySnapshot = await getDocs(hospitalsQuery);
 
-        if (!querySnapshot.empty) {
-          // Find the document with matching email
-          querySnapshot.forEach(async (docSnap) => {
-            const hospitalData = docSnap.data();
-            const hospitalCode = hospitalData?.code;
-
-            if (hospitalCode) {
-              // Now, use the hospital code to fetch the rooms subcollection
-              const roomsRef = collection(
-                db,
-                "hospitals",
-                hospitalCode,
-                "rooms"
-              );
-              const roomsSnapshot = await getDocs(roomsRef);
-
-              const availableRooms: string[] = [];
-              roomsSnapshot.forEach((roomDoc) => {
-                const roomData = roomDoc.data();
-                console.log("Room data:", roomData); // Log room data to see what is fetched
-
-                if (roomData?.room_name) {
-                  availableRooms.push(roomData.room_name);
-                  setSuperRooms([...superRooms, roomData.room_name]); // Fix: Use spread operator to add new room name to superRooms array
-                }
-              });
-
-              console.log("Available rooms:", availableRooms); // Log available rooms after fetching
-              setRooms(availableRooms); // Set the available rooms
-              setUserType("hospital");
-            }
-          });
-        } else {
+        if (querySnapshot.empty) {
+          console.log("No hospital document found for this user.");
           setUserType("other");
+          return;
         }
-      } else {
+
+        // Get the first matching document (assuming one hospital per user)
+        const hospitalDoc = querySnapshot.docs[0];
+        const hospitalData = hospitalDoc.data();
+
+        // Extract the "code" field
+        const hospitalCode = hospitalData?.code;
+
+        if (!hospitalCode) {
+          console.error("Hospital code not found in the document.");
+          setUserType("other");
+          return;
+        }
+
+        console.log("Hospital Code:", hospitalCode);
+
+        // Fetch rooms from the "rooms" subcollection within the hospital document
+        const roomsRef = collection(db, "hospitals", hospitalDoc.id, "rooms");
+        const roomsSnapshot = await getDocs(roomsRef);
+
+        const availableRooms: string[] = [];
+        roomsSnapshot.forEach((roomDoc) => {
+          const roomData = roomDoc.data();
+          if (roomData?.room_name) {
+            availableRooms.push(roomData.room_name);
+            setSuperRooms([...superRooms, roomData.room_name]); // Fix: Use spread operator to add new room name to superRooms array
+          }
+        });
+
+        console.log("Available Rooms:", availableRooms);
+        setRooms(availableRooms); // Set available rooms for selection
+        setUserType("hospital");
+      } catch (error) {
+        console.error("Error fetching hospital/rooms data:", error);
         setUserType(null);
       }
     });
 
-    // Cleanup function to unsubscribe from auth state listener when the component is unmounted
+    // Cleanup the subscription
     return () => unsubscribe();
   }, []);
 
   const handleAddPatient = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (userType !== "hospital") {
       alert("Access Denied! Only hospital users can add patients.");
       return;
     }
 
-    // Your patient adding logic here
-    console.log({ fullName, email, roomName, remarks });
-    alert("Patient added successfully!");
+    try {
+      // Reference the hospitals collection
+      const hospitalsRef = collection(db, "hospitals");
+      
+      const hospitalsQuery = query(
+        hospitalsRef,
+        where("members", "array-contains", auth.currentUser?.email)
+      );
+      const querySnapshot = await getDocs(hospitalsQuery);
 
-    // Reset the form
-    setFullName("");
-    setEmail("");
-    setRoomName("");
-    setRemarks("");
+      if (querySnapshot.empty) {
+        alert("Hospital document not found for this user. Access denied.");
+        return;
+      }
+
+      // Fetch the first hospital document that matches the query
+      const hospitalDoc = querySnapshot.docs[0];
+      const hospitalData = hospitalDoc.data();
+
+      if (!hospitalData?.code) {
+        console.error("No hospital code found in the document.");
+        alert(
+          "An error occurred while verifying hospital data. Access denied."
+        );
+        return;
+      }
+
+      const hospitalCode = hospitalData.code; // Retrieve the code field
+
+      // Add the patient to the 'patients' subcollection within the hospital document
+      const patientsRef = collection(db, "hospitals", hospitalCode, "patients");
+
+      await addDoc(patientsRef, {
+        fullName,
+        email,
+        roomName,
+        remarks,
+        createdAt: new Date(), // Timestamp for when the patient was added
+      });
+
+      console.log("Patient added successfully to Firestore.");
+      alert("Patient added successfully!");
+
+      // Reset only specific fields of the form
+      setFullName("");
+      setRoomName("");
+      setRemarks("");
+    } catch (error) {
+      console.error("Error adding patient:", error);
+      alert("An error occurred while adding the patient. Please try again.");
+    }
   };
 
   return (

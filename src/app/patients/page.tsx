@@ -1,17 +1,25 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { getFirestore, collection, getDocs } from "firebase/firestore";
+import {
+  getFirestore,
+  collection,
+  query,
+  where,
+  getDocs,
+} from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "../../firebase/firebaseConfig";
+import { auth, db } from "../../firebase/firebaseConfig";
 import Navbar from "@/components/navbar/Navbar";
 import Footer from "@/components/footer/Footer";
 import PatientTile from "@/components/patient_tile/PatientTile";
 import Link from "next/link";
 
 type Patient = {
-  name: string;
-  timestamp: string;
-  room: string;
+  fullName: string;
+  remarks: string;
+  email: string;
+  createdAt: string;
+  roomName: string;
 };
 
 const PatientsPage: React.FC = () => {
@@ -20,8 +28,6 @@ const PatientsPage: React.FC = () => {
   const [isAuthorized, setIsAuthorized] = useState(false);
 
   useEffect(() => {
-    const db = getFirestore();
-
     const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
       if (!user) {
         alert("Access denied: User not logged in.");
@@ -30,36 +36,63 @@ const PatientsPage: React.FC = () => {
       }
 
       try {
-        // Check if the user is authorized (hospital user)
-        const userRef = collection(db, "users"); // Assuming users are stored in the 'users' collection
-        const userDocs = await getDocs(userRef);
-        let authorized = false;
-        userDocs.forEach((doc) => {
-          if (doc.id === user.uid && doc.data().type === "hospital") {
-            authorized = true;
+        const userEmail = user.email;
+        if (!userEmail) {
+          console.error("User email not found.");
+          setIsLoading(false);
+          return;
+        }
+
+        // Query the `hospitals` collection for documents containing the user's email in the `members` array
+        const hospitalsRef = collection(db, "hospitals");
+        const hospitalsSnapshot = await getDocs(hospitalsRef);
+
+        // Loop through all hospitals to check if the user's email exists in the `members` array
+        let hospitalDocId = "";
+        let hospitalCode = "";
+
+        hospitalsSnapshot.forEach((doc) => {
+          const data = doc.data();
+          if (data.members && data.members.includes(userEmail)) {
+            hospitalDocId = doc.id; // Get the document ID
+            hospitalCode = data.code; // Get the code of the hospital
+            alert("some cool code is" + data.code);
           }
         });
 
-        if (!authorized) {
-          alert("Access denied: You are not authorized to view this page.");
+        if (!hospitalDocId || !hospitalCode) {
+          alert("Access denied: You are not associated with any hospital.");
           setIsLoading(false);
           return;
         }
 
         setIsAuthorized(true);
+        console.log("Hospital Code:", hospitalCode); // Debugging step
 
-        // Fetch patients from Firestore
-        const patientsRef = collection(db, "patients");
+        // Fetch patients from the `patients` subcollection using the hospital code
+        const patientsRef = collection(
+          db,
+          "hospitals",
+          hospitalCode,
+          "patients"
+        );
         const patientsSnapshot = await getDocs(patientsRef);
 
+        console.log("Fetched patients data:", patientsSnapshot.docs); // Debugging step
         if (patientsSnapshot.empty) {
           setPatients([]);
         } else {
-          const patientsList: Patient[] = patientsSnapshot.docs.map((doc) => ({
-            name: doc.data().name,
-            timestamp: doc.data().timestamp,
-            room: doc.data().room,
-          }));
+          const patientsList: Patient[] = patientsSnapshot.docs.map((doc) => {
+            const data = doc.data();
+            console.log("Patient data:", data); // Log the fetched patient data for debugging
+            return {
+              fullName: data.fullName,
+              createdAt: data.createdAt.toDate().toLocaleDateString(),
+              roomName: data.roomName,
+              email: data.email,
+              remarks: data.remarks,
+            };
+          });
           setPatients(patientsList);
         }
       } catch (error) {
@@ -88,7 +121,7 @@ const PatientsPage: React.FC = () => {
 
         <Link href="/add-patient">
           <h4
-            className="text-xl font-semiobold text-green-300 mb-3 underline cursor-pointer"
+            className="text-xl font-semibold text-green-300 mb-3 underline cursor-pointer"
             style={{ fontFamily: "Poppins, sans-serif" }}
           >
             Add new record...

@@ -3,9 +3,11 @@ import React from "react";
 
 type PatientProps = {
   patient: {
-    name: string;
-    timestamp: string;
-    room: string;
+    fullName: string;
+    remarks: string;
+    roomName: string;
+    email: string;
+    createdAt: string; // Expecting a formatted string here
   };
 };
 
@@ -17,11 +19,11 @@ const PatientTile: React.FC<PatientProps> = ({ patient }) => {
           className="text-lg font-bold text-red-300"
           style={{ fontFamily: "Poppins, sans-serif" }}
         >
-          {patient.name}
+          {patient.fullName}
         </h3>
-        <p className="text-sm text-gray-400">{patient.timestamp}</p>
+        <p className="text-sm text-gray-400">{patient.createdAt}</p>
       </div>
-      <p className="text-md font-semibold text-gray-200">{patient.room}</p>
+      <p className="text-md font-semibold text-gray-200">{patient.roomName}</p>
     </div>
   );
 };
