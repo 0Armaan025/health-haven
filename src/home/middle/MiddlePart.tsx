@@ -15,11 +15,9 @@ const MiddlePart = () => {
       if (currentUser) {
         setUser(currentUser);
         console.log("User logged in:", currentUser);
-        alert(`User logged in: ${currentUser.email}`);
       } else {
         setUser(null);
         console.log("No user logged in");
-        alert("No user logged in");
       }
     });
     AOS.init({

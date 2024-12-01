@@ -1,14 +1,44 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import "./navbar.css";
 import LOGO from "../../../public/logo.png";
 import Link from "next/link";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { db, auth } from "../../firebase/firebaseConfig";
 
 type Props = {};
 
 const Navbar = () => {
+  const [userType, setUserType] = useState<string | null>(null);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const userRef = doc(db, "users", user.uid);
+        const userDoc = await getDoc(userRef);
+        const userData = userDoc.data();
+
+        if (userData?.type) {
+          setUserType(userData.type); // Set the user type based on Firestore document
+        }
+      }
+    });
+
+    // Cleanup on unmount
+    return () => unsubscribe();
+  }, []);
+
+  const handleDashboardClick = () => {
+    if (userType === "individual") {
+      window.location.href = "/user-dashboard"; // Redirect to user dashboard
+    } else {
+      window.location.href = "/dashboard"; // Redirect to hospital dashboard
+    }
+  };
+
   return (
-    <div className="navbar flex items-center sticky z-50  top-0 justify-between px-4 py-3 shadow-md w-full  text-white">
+    <div className="navbar flex items-center sticky z-50 top-0 justify-between px-4 py-3 shadow-md w-full text-white">
       {/* Logo Section */}
       <div className="flex-shrink-0">
         <Link href="/">
@@ -42,14 +72,13 @@ const Navbar = () => {
 
       {/* Button Section */}
       <div className="flex-shrink-0">
-        <Link href="/dashboard">
-          <button
-            className="text-lg font-semibold bg-red-600 px-4 py-2 rounded-full transition-all hover:bg-red-700"
-            style={{ fontFamily: "Poppins, sans-serif" }}
-          >
-            Dashboard
-          </button>
-        </Link>
+        <button
+          onClick={handleDashboardClick} // Call the function on click
+          className="text-lg font-semibold bg-red-600 px-4 py-2 rounded-full transition-all hover:bg-red-700"
+          style={{ fontFamily: "Poppins, sans-serif" }}
+        >
+          Dashboard
+        </button>
       </div>
     </div>
   );

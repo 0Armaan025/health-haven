@@ -9,6 +9,9 @@ import {
   FaHospital,
 } from "react-icons/fa"; // Icons for better UI
 import { FaPerson } from "react-icons/fa6";
+import { getAuth, signOut } from "firebase/auth";
+import { doc, deleteDoc } from "firebase/firestore";
+import { db, auth } from "../../firebase/firebaseConfig"; // Import your firebase config
 
 type Props = {};
 
@@ -23,6 +26,25 @@ const LeftSideBar: React.FC<Props> = () => {
     { name: "Log out", icon: <FaSignOutAlt />, path: "/logout" },
   ];
 
+  const handleLogout = async () => {
+    const user = auth.currentUser;
+    if (user) {
+      try {
+        // Delete the user's document from Firestore
+        const userRef = doc(db, "users", user.uid);
+        await deleteDoc(userRef);
+
+        // Log out the user
+        await signOut(auth);
+
+        // Redirect to the login page after logging out
+        window.location.href = "/login"; // Adjust the path as per your login page route
+      } catch (error) {
+        console.error("Error during logout:", error);
+      }
+    }
+  };
+
   return (
     <div className="w-64 h-screen bg-gray-900 text-gray-100 flex flex-col shadow-lg sm:w-56 md:w-64 lg:w-72 xl:w-80">
       {/* Sidebar Header */}
@@ -36,13 +58,23 @@ const LeftSideBar: React.FC<Props> = () => {
         <ul className="mt-6 space-y-2 px-4">
           {menuItems.map((item) => (
             <li key={item.name}>
-              <button
-                onClick={() => (window.location.href = item.path)}
-                className="flex items-center w-full px-4 py-3 text-left text-gray-200 rounded-lg hover:bg-gray-800 hover:text-red-500 transition"
-              >
-                <span className="text-xl mr-3">{item.icon}</span>
-                <span className="font-medium">{item.name}</span>
-              </button>
+              {item.name === "Log out" ? (
+                <button
+                  onClick={handleLogout} // Call logout function on click
+                  className="flex items-center w-full px-4 py-3 text-left text-gray-200 rounded-lg hover:bg-gray-800 hover:text-red-500 transition"
+                >
+                  <span className="text-xl mr-3">{item.icon}</span>
+                  <span className="font-medium">{item.name}</span>
+                </button>
+              ) : (
+                <button
+                  onClick={() => (window.location.href = item.path)}
+                  className="flex items-center w-full px-4 py-3 text-left text-gray-200 rounded-lg hover:bg-gray-800 hover:text-red-500 transition"
+                >
+                  <span className="text-xl mr-3">{item.icon}</span>
+                  <span className="font-medium">{item.name}</span>
+                </button>
+              )}
             </li>
           ))}
         </ul>

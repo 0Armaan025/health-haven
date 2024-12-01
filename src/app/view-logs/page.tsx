@@ -35,6 +35,9 @@ const ViewLogsPage: React.FC = () => {
       if (user) {
         setUserEmail(user.email);
         await fetchPatientLogs(user.email as any);
+      } else {
+        alert("user not logged in");
+        window.location.href = "/";
       }
     });
 
