@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "aos": "^2.3.4",
+    "date-fns": "^4.1.0",
     "firebase": "^11.0.2",
     "html2canvas": "^1.4.1",
     "next": "15.0.3",

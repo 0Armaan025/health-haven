@@ -1,19 +1,60 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Navbar from "@/components/navbar/Navbar";
 import Footer from "@/components/footer/Footer";
 import UserLeftSideBar from "@/components/user-left-side-bar/UserLeftSideBar";
+import { db, auth } from "../../firebase/firebaseConfig";
+import { onAuthStateChanged } from "firebase/auth";
+import { doc, getDoc, updateDoc, getFirestore } from "firebase/firestore";
 
 const UserDashboardPage: React.FC = () => {
-  const [username, setUsername] = useState<string>("John Doe");
-  const [editedUsername, setEditedUsername] = useState<string>(username);
+  const [username, setUsername] = useState<string>(""); // To store the username
+  const [editedUsername, setEditedUsername] = useState<string>(""); // For the editable username
+  const [userEmail, setUserEmail] = useState<string | null>(null); // To store the signed-in user's email
 
+  useEffect(() => {
+    // Listen to the auth state changes
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        setUserEmail(user.email);
+        await fetchUserData(user.email as any);
+      } else {
+        // Handle when the user is not signed in (if needed)
+        setUserEmail(null);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // Fetch user data from Firestore when the user is signed in
+  const fetchUserData = async (email: string) => {
+    if (!email) return;
+
+    const userDocRef = doc(db, "users", auth.currentUser?.uid as any); // Assuming email is the doc ID
+    const userDoc = await getDoc(userDocRef);
+
+    if (userDoc.exists()) {
+      const userData = userDoc.data();
+      setUsername(userData?.username || ""); // Set username from Firestore
+      setEditedUsername(userData?.username || ""); // For editing purposes
+    }
+  };
+
+  // Handle changes in the username input
   const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEditedUsername(e.target.value);
   };
 
-  const handleSaveUsername = () => {
-    setUsername(editedUsername);
+  // Save the edited username to Firestore
+  const handleSaveUsername = async () => {
+    if (userEmail && editedUsername !== username) {
+      const userDocRef = doc(db, "users", auth.currentUser?.uid as any); // Reference to the user's document in Firestore
+      await updateDoc(userDocRef, { username: editedUsername });
+
+      // Update the local state to reflect the changes
+      setUsername(editedUsername);
+    }
   };
 
   return (
@@ -49,8 +90,6 @@ const UserDashboardPage: React.FC = () => {
               </button>
             </div>
           </div>
-
-          {/* Logs Section */}
 
           {/* Logout Button */}
           <div className="flex justify-center">

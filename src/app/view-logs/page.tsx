@@ -1,7 +1,17 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { db, auth } from "../../firebase/firebaseConfig";
 import Navbar from "@/components/navbar/Navbar";
 import Footer from "@/components/footer/Footer";
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  getFirestore,
+} from "firebase/firestore";
+import { onAuthStateChanged } from "firebase/auth";
+import { format } from "date-fns"; // You can use date-fns to format timestamps
 
 type PatientLog = {
   date: string;
@@ -10,38 +20,61 @@ type PatientLog = {
   time: string;
   room: string;
   remarks: string;
+  docId: string; // Add docId to the PatientLog type
 };
 
-const logsData: PatientLog[] = [
-  {
-    date: "2024-11-28",
-    fullName: "John Doe",
-    email: "john.doe@example.com",
-    time: "10:30 AM",
-    room: "Room 101",
-    remarks: "Stable condition. Regular monitoring advised.",
-  },
-  {
-    date: "2024-11-27",
-    fullName: "John Doe",
-    email: "john.doe@example.com",
-    time: "3:15 PM",
-    room: "Room 102",
-    remarks: "Slight improvement in vitals. Continue medication.",
-  },
-  {
-    date: "2024-11-26",
-    fullName: "John Doe",
-    email: "john.doe@example.com",
-    time: "9:00 AM",
-    room: "Room 103",
-    remarks: "Initial checkup completed. Awaiting test results.",
-  },
-];
-
 const ViewLogsPage: React.FC = () => {
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [logsData, setLogsData] = useState<PatientLog[]>([]);
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [filteredLogs, setFilteredLogs] = useState<PatientLog[]>(logsData);
+
+  useEffect(() => {
+    // Get the signed-in user's email
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        setUserEmail(user.email);
+        await fetchPatientLogs(user.email as any);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // Fetch patient logs from all hospital subcollections
+  const fetchPatientLogs = async (email: string) => {
+    const hospitalsRef = collection(db, "hospitals");
+    const hospitalsSnapshot = await getDocs(hospitalsRef);
+    const allLogs: PatientLog[] = [];
+
+    // Loop through all hospital documents
+    for (const hospitalDoc of hospitalsSnapshot.docs) {
+      const patientsRef = collection(hospitalDoc.ref, "patients");
+      const patientsSnapshot = await getDocs(patientsRef);
+
+      // Loop through all patient records in each hospital
+      patientsSnapshot.docs.forEach((doc) => {
+        const data = doc.data();
+        if (data.email === email) {
+          // Format the createdAt timestamp to a readable date string
+          const formattedDate = format(data.createdAt.toDate(), "yyyy-MM-dd");
+          const log: PatientLog = {
+            date: formattedDate,
+            fullName: data.fullName,
+            email: data.email,
+            time: format(data.createdAt.toDate(), "hh:mm a"),
+            room: data.roomName,
+            remarks: data.remarks,
+            docId: doc.id, // Store the docId of each patient log
+          };
+          allLogs.push(log);
+        }
+      });
+    }
+
+    setLogsData(allLogs);
+    setFilteredLogs(allLogs); // Initially, show all logs
+  };
 
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const date = e.target.value;
@@ -53,6 +86,11 @@ const ViewLogsPage: React.FC = () => {
     } else {
       setFilteredLogs(logsData);
     }
+  };
+
+  // Handle the click on a specific log row
+  const handleRowClick = (docId: string) => {
+    window.location.href = `/patient-log/${docId}`; // Navigate to the patient log page with the docId
   };
 
   return (
@@ -102,10 +140,13 @@ const ViewLogsPage: React.FC = () => {
               <tbody>
                 {filteredLogs.map((log, index) => (
                   <tr
-                    key={index}
+                    key={log.docId} // Use docId as the key
                     className={`${
-                      index % 2 === 0 ? "bg-gray-800" : "bg-gray-700"
+                      index % 2 === 0
+                        ? "bg-gray-800 cursor-pointer"
+                        : "bg-gray-700 cursor-pointer "
                     }`}
+                    onClick={() => handleRowClick(log.docId)} // Add click handler to navigate
                   >
                     <td className="border border-gray-600 px-4 py-2">
                       {log.date}

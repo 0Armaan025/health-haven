@@ -1,22 +1,30 @@
 "use client";
-import React, { useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Navbar from "@/components/navbar/Navbar";
 import Footer from "@/components/footer/Footer";
 import html2canvas from "html2canvas";
+import { DocumentReference, doc } from "firebase/firestore";
+import {
+  getFirestore,
+  collection,
+  query,
+  where,
+  getDocs,
+  getDoc,
+  DocumentData,
+} from "firebase/firestore";
+import { auth, db } from "../../../firebase/firebaseConfig";
+import { useParams } from "next/navigation";
+import { onAuthStateChanged } from "firebase/auth";
 
 const PatientLog: React.FC = () => {
+  const { id } = useParams();
   const tableRef = useRef<HTMLDivElement>(null);
+  const [patient, setPatient] = useState<DocumentData | null>(null);
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Patient details
-  const patient = {
-    fullName: "John Doe",
-    email: "john.doe@example.com",
-    dateTime: "2024-11-28 10:30 AM",
-    room: "Room 101",
-    remarks: "Stable condition. Regular monitoring advised.",
-  };
-
-  // Function to download table as an image
+  // Function to download the patient log as an image
   const downloadAsImage = async (format: "jpg" | "png") => {
     if (!tableRef.current) return;
 
@@ -28,12 +36,92 @@ const PatientLog: React.FC = () => {
     link.click();
   };
 
+  useEffect(() => {
+    const fetchPatientLog = async () => {
+      try {
+        setIsLoading(true);
+        onAuthStateChanged(auth, async (user) => {
+          if (!user) {
+            setIsAuthorized(false);
+            throw new Error("User not logged in.");
+          }
+
+          const userEmail = user.email;
+          // const db = getFirestore();
+
+          // Check if the logged-in user is a hospital type
+          const usersRef = collection(db, "users");
+          const userQuery = query(usersRef, where("email", "==", userEmail));
+          const userSnapshot = await getDocs(userQuery);
+
+          if (userSnapshot.empty) {
+            setIsAuthorized(false);
+            throw new Error("User not found.");
+          }
+
+          const userData = userSnapshot.docs[0].data();
+          if (userData.type !== "hospital") {
+            setIsAuthorized(false);
+            throw new Error("Access denied: User is not a hospital.");
+          }
+
+          // Find the hospital where the user is a member
+          const hospitalsRef = collection(db, "hospitals");
+          const hospitalQuery = query(
+            hospitalsRef,
+            where("members", "array-contains", userEmail)
+          );
+          const hospitalSnapshot = await getDocs(hospitalQuery);
+
+          if (hospitalSnapshot.empty) {
+            setIsAuthorized(false);
+            throw new Error("User is not associated with any hospital.");
+          }
+
+          const hospitalDoc = hospitalSnapshot.docs[0];
+          const hospitalId = hospitalDoc.id;
+
+          // Fetch the specific patient record from the hospital's patients subcollection
+          if (!id) {
+            throw new Error("Invalid patient ID.");
+          }
+
+          const patientRef = doc(
+            db, // Firestore instance
+            `hospitals/${hospitalId}/patients/${id}` // Full path as a single string
+          );
+          const patientDoc = await getDoc(patientRef);
+
+          if (!patientDoc.exists()) {
+            throw new Error("Patient record not found.");
+          }
+
+          setPatient(patientDoc.data());
+          setIsAuthorized(true);
+        });
+      } catch (error) {
+        console.error(
+          error instanceof Error ? error.message : "An error occurred."
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchPatientLog();
+  }, [id]);
+
+  if (isLoading)
+    return <p className="text-center text-gray-100 mt-8">Loading...</p>;
+  if (!isAuthorized)
+    return <p className="text-center text-red-500 mt-8">Access Denied.</p>;
+
   return (
     <>
       <Navbar />
       <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 text-gray-100 px-6 py-8 flex flex-col items-center">
         <h2 className="text-3xl font-semibold mb-6 text-red-500 font-poppins">
-          Your Patient Log
+          Patient Log
         </h2>
         <div
           ref={tableRef}
@@ -46,7 +134,7 @@ const PatientLog: React.FC = () => {
                   Patient Full Name
                 </td>
                 <td className="border border-gray-600 px-4 py-2">
-                  {patient.fullName}
+                  {patient?.fullName || "N/A"}
                 </td>
               </tr>
               <tr className="bg-gray-700">
@@ -54,7 +142,7 @@ const PatientLog: React.FC = () => {
                   Email
                 </td>
                 <td className="border border-gray-600 px-4 py-2">
-                  {patient.email}
+                  {patient?.email || "N/A"}
                 </td>
               </tr>
               <tr className="bg-gray-800">
@@ -62,7 +150,11 @@ const PatientLog: React.FC = () => {
                   Date and Time
                 </td>
                 <td className="border border-gray-600 px-4 py-2">
-                  {patient.dateTime}
+                  {patient?.createdAt
+                    ? new Date(
+                        patient.createdAt.seconds * 1000
+                      ).toLocaleString()
+                    : "N/A"}
                 </td>
               </tr>
               <tr className="bg-gray-700">
@@ -70,7 +162,7 @@ const PatientLog: React.FC = () => {
                   Room
                 </td>
                 <td className="border border-gray-600 px-4 py-2">
-                  {patient.room}
+                  {patient?.roomName || "N/A"}
                 </td>
               </tr>
               <tr className="bg-gray-800">
@@ -78,7 +170,7 @@ const PatientLog: React.FC = () => {
                   Remarks by the Doctor
                 </td>
                 <td className="border border-gray-600 px-4 py-2">
-                  {patient.remarks}
+                  {patient?.remarks || "N/A"}
                 </td>
               </tr>
             </tbody>

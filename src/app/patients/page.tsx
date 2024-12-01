@@ -19,6 +19,7 @@ type Patient = {
   remarks: string;
   email: string;
   createdAt: string;
+  docId: string;
   roomName: string;
 };
 
@@ -26,6 +27,7 @@ const PatientsPage: React.FC = () => {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthorized, setIsAuthorized] = useState(false);
+  const [docId, setDocId] = useState("");
 
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
@@ -55,8 +57,9 @@ const PatientsPage: React.FC = () => {
           const data = doc.data();
           if (data.members && data.members.includes(userEmail)) {
             hospitalDocId = doc.id; // Get the document ID
+            setDocId(hospitalDocId);
             hospitalCode = data.code; // Get the code of the hospital
-            alert("some cool code is" + data.code);
+            // alert("some cool code is");
           }
         });
 
@@ -86,6 +89,7 @@ const PatientsPage: React.FC = () => {
             const data = doc.data();
             console.log("Patient data:", data); // Log the fetched patient data for debugging
             return {
+              docId: doc.id,
               fullName: data.fullName,
               createdAt: data.createdAt.toDate().toLocaleDateString(),
               roomName: data.roomName,
