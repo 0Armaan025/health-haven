@@ -1,4 +1,7 @@
 # Health Haven
+
+![image](https://github.com/user-attachments/assets/953f34f1-be6a-4a80-945d-1167c3b5ae77)
+
 ## Your hospital management system - for both consumers and the hospital staff.
 ### Features that it provides:
 - It helps with room management, hospital staff can create rooms, edit them, or change the status of a room.
