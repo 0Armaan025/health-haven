@@ -84,6 +84,7 @@ const DashboardPage: React.FC = ({}) => {
         }
       } else {
         console.error("No authenticated user found!");
+        window.location.href = "/sign-up";
         setIsAuthorized(false);
       }
       setLoading(false);

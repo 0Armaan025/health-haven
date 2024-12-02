@@ -5,6 +5,7 @@ import "./middlepart.css";
 import { onAuthStateChanged } from "firebase/auth";
 
 import { auth, db } from "../../firebase/firebaseConfig";
+import Link from "next/link";
 
 const MiddlePart = () => {
   const [user, setUser] = useState<any>(null);
@@ -50,9 +51,11 @@ const MiddlePart = () => {
 
       {/* Button Section */}
       <div className="mt-8" data-aos="fade-up" data-aos-delay="400">
+        <Link href="/login">
         <button className="getStartedBtn px-8 py-3 text-sm md:text-base lg:text-lg">
           Get Started Now ➜
         </button>
+        </Link>
       </div>
 
       {/* Card Section */}

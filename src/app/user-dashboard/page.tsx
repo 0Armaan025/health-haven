@@ -1,32 +1,72 @@
 "use client";
-import React from "react";
-import { FaHome, FaBell, FaUser, FaSignOutAlt, FaBook } from "react-icons/fa"; // Icons for better UI
-import { getAuth, signOut } from "firebase/auth";
-import { doc, deleteDoc } from "firebase/firestore";
-import { db, auth } from "../../firebase/firebaseConfig"; // Import your firebase config
+import React, { useState, useEffect } from "react";
+import Navbar from "@/components/navbar/Navbar";
+import Footer from "@/components/footer/Footer";
+import UserLeftSideBar from "@/components/user-left-side-bar/UserLeftSideBar";
+import { auth, db } from "../../firebase/firebaseConfig";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { doc, getDoc, updateDoc, deleteDoc } from "firebase/firestore";
 
-type Props = {};
+const UserDashboardPage: React.FC = () => {
+  const [username, setUsername] = useState<string>("");
+  const [editedUsername, setEditedUsername] = useState<string>("");
+  const [userEmail, setUserEmail] = useState<string | null>(null);
 
-const UserLeftSideBar: React.FC<Props> = () => {
-  const menuItems = [
-    { name: "Profile", icon: <FaUser />, path: "/user-dashboard" },
-    { name: "User Logs", icon: <FaBook />, path: "/view-logs" },
-    { name: "Log out", icon: <FaSignOutAlt />, path: "/logout" },
-  ];
+  useEffect(() => {
+    // Listen to the auth state changes
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        setUserEmail(user.email);
+        await fetchUserData(user.uid);
+      } else {
+        setUserEmail(null);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
 
+  // Fetch user data from Firestore
+  const fetchUserData = async (uid: string) => {
+    if (!uid) return;
+    try {
+      const userDocRef = doc(db, "users", uid);
+      const userDoc = await getDoc(userDocRef);
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        setUsername(userData?.username || "");
+        setEditedUsername(userData?.username || "");
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  };
+
+  // Handle username input change
+  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEditedUsername(e.target.value);
+  };
+
+  // Save the edited username to Firestore
+  const handleSaveUsername = async () => {
+    if (userEmail && editedUsername && editedUsername !== username) {
+      try {
+        const userDocRef = doc(db, "users", auth.currentUser?.uid as string);
+        await updateDoc(userDocRef, { username: editedUsername });
+        setUsername(editedUsername); // Update local state
+      } catch (error) {
+        console.error("Error updating username:", error);
+      }
+    }
+  };
+
+  // Handle user logout
   const handleLogout = async () => {
     const user = auth.currentUser;
     if (user) {
       try {
-        // Delete the user's document from Firestore
-        const userRef = doc(db, "users", user.uid);
-        await deleteDoc(userRef);
-
-        // Log out the user
+        // Optional: Delete user data from Firestore if necessary
         await signOut(auth);
-
-        // Redirect to the login page after logging out
-        window.location.href = "/login"; // Adjust the path as per your login page route
+        window.location.href = "/login"; // Redirect to login page
       } catch (error) {
         console.error("Error during logout:", error);
       }
@@ -34,46 +74,50 @@ const UserLeftSideBar: React.FC<Props> = () => {
   };
 
   return (
-    <div className="w-64 h-screen bg-gray-900 text-gray-100 flex flex-col shadow-lg">
-      {/* Sidebar Header */}
-      <div className="text-center py-6 border-b border-gray-800">
-        <h1 className="text-2xl font-bold text-red-600">User Dashboard</h1>
-        <p className="text-sm text-gray-400">Manage your account</p>
-      </div>
+    <>
+      <Navbar />
+      <div className="flex min-h-screen bg-gray-800 text-gray-100">
+        {/* Left Sidebar */}
+        <UserLeftSideBar />
+        {/* Main Dashboard Content */}
+        <div className="flex-1 p-8 space-y-6">
+          <h1 className="text-3xl font-semibold text-red-500">
+            Welcome, {username}
+          </h1>
 
-      {/* Menu Items */}
-      <nav className="flex-grow">
-        <ul className="mt-6 space-y-2 px-4">
-          {menuItems.map((item) => (
-            <li key={item.name}>
-              {item.name === "Log out" ? (
-                <button
-                  onClick={handleLogout} // Call logout function on click
-                  className="flex items-center w-full px-4 py-3 text-left text-gray-200 rounded-lg hover:bg-gray-800 hover:text-red-500 transition"
-                >
-                  <span className="text-xl mr-3">{item.icon}</span>
-                  <span className="font-medium">{item.name}</span>
-                </button>
-              ) : (
-                <button
-                  onClick={() => (window.location.href = item.path)}
-                  className="flex items-center w-full px-4 py-3 text-left text-gray-200 rounded-lg hover:bg-gray-800 hover:text-red-500 transition"
-                >
-                  <span className="text-xl mr-3">{item.icon}</span>
-                  <span className="font-medium">{item.name}</span>
-                </button>
-              )}
-            </li>
-          ))}
-        </ul>
-      </nav>
+          {/* Profile Section */}
+          <div className="bg-gray-700 p-6 rounded-lg shadow-lg">
+            <h2 className="text-2xl font-semibold mb-4">Edit Profile</h2>
+            <div className="flex items-center space-x-4">
+              <input
+                type="text"
+                value={editedUsername}
+                onChange={handleUsernameChange}
+                className="p-3 rounded-md w-48 bg-gray-800 text-gray-100 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-red-500"
+              />
+              <button
+                onClick={handleSaveUsername}
+                className="px-6 py-2 bg-red-500 text-gray-100 rounded-md hover:bg-red-600"
+              >
+                Save
+              </button>
+            </div>
+          </div>
 
-      {/* Footer */}
-      <div className="py-4 border-t border-gray-800 text-center text-sm text-gray-400">
-        <p>&copy; 2024 User Dashboard</p>
+          {/* Logout Button */}
+          <div className="flex justify-center">
+            <button
+              onClick={handleLogout}
+              className="px-6 py-2 bg-red-500 text-gray-100 rounded-md hover:bg-red-600"
+            >
+              Log Out
+            </button>
+          </div>
+        </div>
       </div>
-    </div>
+      <Footer />
+    </>
   );
 };
 
-export default UserLeftSideBar;
+export default UserDashboardPage;
