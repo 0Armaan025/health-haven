@@ -101,7 +101,7 @@ const handleUserTypeChange = async (type: string) => {
 
     // Add user details to Firestore under "users" collection
     await setDoc(doc(db, "users", user.uid), userData).then(() => {
-      window.location.href = "/dashboard";
+      window.location.href = "/user-dashboard";
     });
   } else {
     setStep(4); // Go to hospital details step (step 4) for hospital staff
